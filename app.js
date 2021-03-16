@@ -10,7 +10,6 @@ var items = ["buy Food ", "Cook Food", "Eat Food"];
 var workListItems = [];
 
 var item = "";
-let workItem = "";
 
 app.set('view engine', 'ejs');
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -23,23 +22,35 @@ app.get("/", function(req, res) {
         listTitle: day,
         newListItems: items,
     });
+    console.log(req.body);
 })
 
 app.post("/", function(req, res) {
-    item = req.body.todoListName;
-    workItem = req.body.todoListName;
+    console.log(req.body);
+    let catergory = req.body.list;
+    let item = req.body.todoListName;
+
+    if (catergory === 'Work') {
+        workListItems.push(item);
+        res.redirect('/workitem');
+    } else {
+        items.push(item);
+        res.redirect('/');
+    }
 })
 
 app.get("/workitem", (req, res) => {
 
-    let day = date();
-
-    res.render('list', {
-        listTitle: day,
-        newListItems: workListItems
-    });
-})
-
+        res.render('list', {
+            listTitle: "Work Items",
+            newListItems: workListItems
+        });
+    })
+    // app.post("/workitem", (req, res) => {
+    //     let item = req.body.todoListName;
+    //     workListItems.push(item);
+    //     res.redirect("/workitem");
+    // })
 
 app.listen(3000, function() {
     console.log("Server is running on port 3000");
