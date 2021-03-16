@@ -11,7 +11,9 @@
 ## Steps For cloning the Project and installing the dependencies
 
 > git clone https://github.com/mananaggarwal2001/Todo-List.git
+
 > cd Todo (Press tab for auto completion)
+
 > git install (Name of the dependencies)
 
 ## To Start the Server
