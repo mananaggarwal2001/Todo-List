@@ -1,56 +1,88 @@
 const express = require('express');
 const bodyparser = require('body-parser');
 const date = require(__dirname + "/date.js");
-
+const mongoose = require('mongoose');
 const app = express();
-
-console.log(date());
-
-var items = ["buy Food ", "Cook Food", "Eat Food"];
-var workListItems = [];
-
-var item = "";
 
 app.set('view engine', 'ejs');
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-app.get("/", function(req, res) {
-    let day = date();
-
-    res.render('list', {
-        listTitle: day,
-        newListItems: items,
-    });
-    console.log(req.body);
-})
-
-app.post("/", function(req, res) {
-    console.log(req.body);
-    let catergory = req.body.list;
-    let item = req.body.todoListName;
-
-    if (catergory === 'Work') {
-        workListItems.push(item);
-        res.redirect('/workitem');
-    } else {
-        items.push(item);
-        res.redirect('/');
+mongoose.connect("mongodb://localhost:27017/todoListDB", { useNewUrlParser: true });
+const itemSchema = mongoose.Schema({
+    name: {
+        type: String,
+        required: true
     }
 })
 
-app.get("/workitem", (req, res) => {
+const itemModel = mongoose.model("listItem", itemSchema);
+const workItemModel = mongoose.model("workListItem", itemSchema);
 
-        res.render('list', {
-            listTitle: "Work Items",
-            newListItems: workListItems
-        });
+const newItem = new itemModel({
+    name: "Welcome to your todolist!!!"
+});
+
+const newItemOne = new itemModel({
+    name: "Hit the + Button to add the new item"
+});
+
+const newItemTwo = new itemModel({
+    name: " <-- Hit this to delete an item "
+});
+
+const defaultItemList = [newItem, newItemOne, newItemTwo];
+
+app.get("/", function(req, res) {
+    let day = date();
+    itemModel.find({}, (err, results) => {
+        if (results.length === 0) {
+            itemModel.insertMany(defaultItemList, (err) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log("Successfully added the item in the todoList");
+                }
+            });
+            res.redirect("/");
+        } else {
+            res.render('list', {
+                listTitle: day,
+                newListItems: results,
+            });
+        }
     })
-    // app.post("/workitem", (req, res) => {
-    //     let item = req.body.todoListName;
-    //     workListItems.push(item);
-    //     res.redirect("/workitem");
-    // })
+})
+
+
+
+
+
+app.post("/deleteItem", (req, res) => {
+    const checkedItemId = req.body.checkedItem;
+    itemModel.findByIdAndRemove({ _id: checkedItemId }, (err) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log("Successfully removed the item ");
+        }
+    })
+
+    res.redirect("/");
+})
+
+app.post("/", function(req, res) {
+    const itemName = req.body.todoListName;
+    const insertItemname = new itemModel({
+        name: itemName
+    });
+    insertItemname.save();
+    res.redirect("/");
+})
+
+// app.get("/workitem", (req, res) => {
+//     res.render("list", { listTitle: "Work" })
+// })
 
 app.listen(3000, function() {
     console.log("Server is running on port 3000");
