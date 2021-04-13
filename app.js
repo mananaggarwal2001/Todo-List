@@ -3,6 +3,7 @@ const bodyparser = require('body-parser');
 const date = require(__dirname + "/date.js");
 const mongoose = require('mongoose');
 const app = express();
+const _ = require('lodash');
 
 app.set('view engine', 'ejs');
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -64,26 +65,44 @@ app.get("/", function(req, res) {
 
 app.post("/deleteItem", (req, res) => {
     const checkedItemId = req.body.checkedItem;
-    itemModel.findByIdAndRemove({ _id: checkedItemId }, (err) => {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log("Successfully removed the item ");
-        }
-    })
+    const listName = req.body.listName;
 
-    res.redirect("/");
-})
+    if (listName === "Tuesday") {
+        itemModel.findByIdAndRemove({ _id: checkedItemId }, (err) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("Successfully removed the item ");
+            }
+        })
+        res.redirect("/");
+    } else {
+        listModel.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: checkedItemId } } }, (err, results) => {
+            if (!err) {
+                res.redirect("/" + listName);
+            }
+        });
+    }
+});
 app.post("/", function(req, res) {
     const itemName = req.body.todoListName;
+    const listName = req.body.list;
     const insertItemname = new itemModel({
         name: itemName
     });
-    insertItemname.save();
-    res.redirect("/");
-})
+    if (listName === "Tuesday") {
+        insertItemname.save();
+        res.redirect("/" + listName);
+    } else {
+        listModel.findOne({ name: listName }, (err, founditem) => {
+            founditem.items.push(insertItemname);
+            founditem.save();
+            res.redirect("/" + listName);
+        });
+    }
+});
 app.get("/:customListName", (req, res) => {
-    let parameters = req.params.customListName;
+    let parameters = _.capitalize(req.params.customListName);
 
     listModel.findOne({ name: parameters }, (err, results) => {
         if (!err) {
