@@ -9,7 +9,7 @@ app.set('view engine', 'ejs');
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost:27017/todoListDB", { useNewUrlParser: true });
+mongoose.connect("mongodb+srv://admin-Manan:manan@9319054970@cluster0.dquuo.mongodb.net/todoListDB", { useNewUrlParser: true });
 const itemSchema = mongoose.Schema({
     name: {
         type: String,
@@ -18,7 +18,6 @@ const itemSchema = mongoose.Schema({
 })
 
 const itemModel = mongoose.model("listItem", itemSchema);
-const workItemModel = mongoose.model("workListItem", itemSchema);
 
 const newItem = new itemModel({
     name: "Welcome to your todolist!!!"
@@ -37,8 +36,8 @@ const defaultItemList = [newItem, newItemOne, newItemTwo];
 
 const listSchema = {
     name: String,
-    items: [itemSchema]
-}
+    items: [itemSchema],
+};
 
 const listModel = mongoose.model("List", listSchema); // for storing the list heading in the List collections in the database of todolistDB.
 
@@ -67,7 +66,7 @@ app.post("/deleteItem", (req, res) => {
     const checkedItemId = req.body.checkedItem;
     const listName = req.body.listName;
 
-    if (listName === "Tuesday") {
+    if (listName === date()) {
         itemModel.findByIdAndRemove({ _id: checkedItemId }, (err) => {
             if (err) {
                 console.log(err);
@@ -85,14 +84,16 @@ app.post("/deleteItem", (req, res) => {
     }
 });
 app.post("/", function(req, res) {
-    const itemName = req.body.todoListName;
+
+    let itemName = req.body.todoListName;
     const listName = req.body.list;
     const insertItemname = new itemModel({
-        name: itemName
+        name: itemName,
     });
-    if (listName === "Tuesday") {
+    if (listName === date()) {
         insertItemname.save();
-        res.redirect("/" + listName);
+        res.redirect("/");
+
     } else {
         listModel.findOne({ name: listName }, (err, founditem) => {
             founditem.items.push(insertItemname);
@@ -126,6 +127,6 @@ app.get("/:customListName", (req, res) => {
     })
 })
 
-app.listen(3000, function() {
-    console.log("Server is running on port 3000");
-})
+app.listen(process.env.PORT || 3000, function() {
+    console.log("Server is listning to the port 3000");
+});
