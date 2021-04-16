@@ -9,7 +9,13 @@ app.set('view engine', 'ejs');
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb+srv://admin-Manan:manan@9319054970@cluster0.dquuo.mongodb.net/todoListDB", { useNewUrlParser: true });
+mongoose.connect("mongodb+srv://admin-Manan:manan9319054970@cluster0.dquuo.mongodb.net/todoListDB", { useNewUrlParser: true }, (err) => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log("Database Connected Successfully");
+    }
+});
 const itemSchema = mongoose.Schema({
     name: {
         type: String,
@@ -126,7 +132,6 @@ app.get("/:customListName", (req, res) => {
         }
     })
 })
-
 app.listen(process.env.PORT || 3000, function() {
     console.log("Server is listning to the port 3000");
 });
