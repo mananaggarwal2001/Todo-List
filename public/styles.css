@@ -56,6 +56,10 @@ form.item {
     margin-left: 20px;
 }
 
+.fontClass {
+    font-weight: bolder;
+}
+
 button {
     min-height: 50px;
     width: 50px;
